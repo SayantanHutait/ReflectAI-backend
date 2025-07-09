@@ -1,6 +1,8 @@
 from pymongo import MongoClient
 from datetime import datetime
 from dotenv import load_dotenv
+from bson import ObjectId
+
 import os
 
 load_dotenv()
@@ -26,20 +28,25 @@ def save(user_id, prompt, entry, advice):
     })
 
 def get_hist(user_id):
-    cursor = collection.find({"user_id":user_id})
-    return [f"Journal: {d['user_entry']}\nDate: {d['timestamp']}"
-            for d in cursor]
+    cursor = collection.find({"user_id": user_id}).sort("timestamp", -1)
+    return [
+        {
+            "id": str(d["_id"]),
+            "journal": d["user_entry"],
+            "timestamp": d["timestamp"].strftime("%Y-%m-%d %H:%M")
+        }
+        for d in cursor
+    ]
+
+def delete_journal(user_id,journal_id):
+    result = collection.delete_one({"_id": ObjectId(journal_id), "user_id": user_id})
+    return result.deleted_count
 
 
 
 if __name__ == "__main__":
     uid = "sayantan123"
-    save(
-        uid,
-        "W?",
-        "I",
-        "Y"
-    )
+
     for item in get_hist(uid):
         print(item)
         print("-" * 50)

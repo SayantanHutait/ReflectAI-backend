@@ -6,6 +6,7 @@ import os
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
     google_api_key=os.getenv("GOOGLE_API_KEY")
+
 )
 
 def gen_prompt(entries):
@@ -21,7 +22,7 @@ def gen_advice(entry):
     template = PromptTemplate.from_template("""
     Journal: "{entry}"
 
-    Read the journal carefully. Based on the tone and content, offer a short, empathetic, and motivational piece of advice (2-3 sentences with no "Generated Advice" heading. Just plane text with easy to understand English). Your goal is to uplift the user's mood and encourage mindful reflection.
+    Read the journal carefully. Based on the tone and content, offer a short, empathetic, and motivational piece of advice with 2 to 3 actionable steps in bullet points (no "Generated Advice" heading. Just plane text with easy to understand English). Your goal is to uplift the user's mood and encourage mindful reflection.
     """)
     return llm.invoke(template.invoke({"entry": entry})).content
 

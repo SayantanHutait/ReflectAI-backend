@@ -7,7 +7,7 @@ from datetime import timedelta
 from fastapi import Depends
 from auth.auth import get_current_user
 from llm.prompts import gen_prompt, gen_advice
-from llm.db import get_entries, save
+from llm.db import get_entries, save, get_hist,delete_journal
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -37,6 +37,7 @@ class JournalInput(BaseModel):
 
 @app.get("/prompt")
 def get_prompt(user_id: str = Depends(get_current_user)):
+    #print("user id from ", user_id)
     entries = get_entries(user_id)
     prompt = gen_prompt(entries)
     return {"prompt": prompt}
@@ -48,9 +49,21 @@ def write_journal(data: JournalInput, user_id: str = Depends(get_current_user)):
     save(user_id, prompt, data.journal, advice)
     return {"advice": advice}
 
+'''def get_current_user():
+    return "sayantan123"''' # Replace with a real user_id in your database
 
 
+@app.get("/history")
+def get_history(user_id: str = Depends(get_current_user)):
+    #print("user id from ", user_id)
+    return get_hist(user_id)
 
+@app.delete("/history/{journal_id}")
+def del_history(journal_id:str,user_id:str = Depends(get_current_user)):
+    del_count = delete_journal(user_id,journal_id)
+    if del_count  == 0:
+        raise HTTPException(status_code=404, detail="Journal not found or unauthorized")
+    return {"message":"Journal deleted successfully"}
 
 
 
